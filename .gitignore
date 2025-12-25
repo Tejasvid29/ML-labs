@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Training outputs
+runs/
+results/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Environments
+.env
+venv/
+data/

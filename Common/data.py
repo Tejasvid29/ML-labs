@@ -1,0 +1,64 @@
+from torch.utils.data import DataLoader #PyTorch's btaching + shuffling + loading engine
+from torchvision import datasets, transforms 
+from torch.utils.data import Subset
+
+
+
+#datasets provdies ready-made datasets like CIFAR-10
+#trasnforms defines how raw images are processed before the model sees them
+
+def get_dataloaders(batch_size = 128, num_workers = 2):
+
+#batch_size - how many images per batch
+#num_workers - how many CPU processes load data in parallel
+
+    train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding = 4), #data augmentation
+        transforms.RandomHorizontalFlip(), #randomly flips images 
+        transforms.ToTensor(),
+        transforms.Normalize( #normalizes data, Xnormalized = (x - mean)/std
+            mean = (0.4914, 0.4822, 0.4465),
+            std = (0.2023, 0.1994, 0.2010)
+        )
+    ])
+
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean = (0.4914, 0.4822, 0.4465),
+            std = (0.2023, 0.1994, 0.2010)
+        )
+    ])
+
+    train_dataset = datasets.CIFAR10(
+        root = "data", 
+        train = True, #selects split
+        download = True,
+        transform = train_transform #preprocessing pipeline
+    )
+
+    test_dataset = datasets.CIFAR10(
+        root = "data",
+        train = False,
+        download = True,
+        transform = test_transform
+    )
+
+    train_dataset = Subset(train_dataset, range(5000))
+    test_dataset = Subset(test_dataset, range(1000))
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size = batch_size,
+        shuffle = True, #shuffles data order in every epoch
+        num_workers = num_workers
+    )
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size = batch_size,
+        shuffle = False,
+        num_workers = num_workers
+    )
+
+    return train_loader, test_loader
