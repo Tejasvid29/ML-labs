@@ -4,6 +4,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import csv
 
 from Common.data import get_dataloaders
 from Common.model import get_model
@@ -28,7 +29,7 @@ def parse_args():
 def main():
     args = parse_args()
     set_seed(args.seed)
-    
+
     #Prepare run directory
     run_dir = make_run_dir(args.runs_root, args.run_name)
 
@@ -36,6 +37,9 @@ def main():
     save_config(vars(args), config_path)
 
     metrics_path = f"{run_dir}/metrics.csv"
+    with open(metrics_path, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["epoch", "train_loss", "test_acc"])
     ckpt_path = f"{run_dir}/best.ckpt"
 
     #Devuce setup
@@ -60,51 +64,61 @@ def main():
         raise ValueError("Unsupported optimizer")
 
     #Training loop 
-    model.train()
-    total_loss = 0.0
+    best_acc = 0.0
 
-    for batch_idx, (images, labels) in enumerate(train_loader):
-        if batch_idx % 50 == 0:
-            print(f"Training batch {batch_idx}/{len(train_loader)}")
+    for epoch in range(1, args.epochs + 1):
+        model.train()
+        total_loss = 0.0
+        for batch_idx, (images, labels) in enumerate(train_loader):
+            if batch_idx % 50 == 0:
+                print(f"Training batch {batch_idx}/{len(train_loader)}")
 
-        images = images.to(device)
-        labels = labels.to(device)
-
-        # Forward pass
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-
-        #backward pass
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        total_loss += loss.item()
-
-    avg_loss = total_loss/ len(train_loader)
-    print(f"Training loss (epoch 1): {avg_loss:.4f}")
-
-    model.eval()
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for images, labels in test_loader:
             images = images.to(device)
             labels = labels.to(device)
 
+            # Forward pass
             outputs = model(images)
-            _, predicted = torch.max(outputs, dim = 1)
+            loss = criterion(outputs, labels)
 
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    
-    accuracy = 100.0 * correct/total
-    print(f"Test accuracy: {accuracy:.2f}")
+            #backward pass
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-    print(f"Run direcorty: {run_dir}")
-    print(f"Using device: {device}")
-    print(f"Train batches: {len(train_loader)}, Test batches: {len(test_loader)}")
+            total_loss += loss.item()
+
+        avg_loss = total_loss/ len(train_loader)
+        print(f"Training loss (epoch {epoch}): {avg_loss:.4f}")
+
+        model.eval()
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+
+                outputs = model(images)
+                _, predicted = torch.max(outputs, dim = 1)
+
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        test_acc = 100.0 * correct/total
+
+        with open(metrics_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([epoch, avg_loss, test_acc])
+
+        if test_acc>best_acc:
+            best_acc = test_acc
+            torch.save(model.state_dict(), ckpt_path)
+
+        print(f"Test test_acc: {test_acc:.2f}")
+        print(f"Run direcorty: {run_dir}")
+        print(f"Using device: {device}")
+        print(f"Train batches: {len(train_loader)}, Test batches: {len(test_loader)}")
 
 if __name__ == "__main__":
     main()
