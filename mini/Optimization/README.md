@@ -1,36 +1,63 @@
-# Optimizer Comparison: AdamW vs SGD
+# Optimization & Generalization: AdamW vs SGD on CIFAR-10
 
 ## Abstract
-This experiment investigates how optimizer choice affects optimization dynamics and generalization behavior when training a fixed architecture (ResNet-18) on a fixed dataset (CIFAR-10). By holding all other variables constant and varying only the optimizer, we aim to observe differences in convergence speed, loss smoothness, and test accuracy trajectories over training epochs. Rather than focusing solely on final accuracy, this study emphasizes learning dynamics as evidence of optimizer behavior, with the goal of building intuition for controlled ablation studies in deep learning.
+We study how optimizer choice affects convergence speed and generalization when training a ResNet-18 on CIFAR-10. Using a strictly controlled setup (same data, model, seed, and training budget), we compare AdamW and SGD with momentum over 20 epochs. We observe that AdamW converges significantly faster and achieves higher test accuracy under a fixed training budget, while SGD improves more slowly but steadily. These results highlight practical trade-offs between adaptive and non-adaptive optimization methods in small-budget regimes.
 
-## Rationale
-AdamW and SGD with momentum differ fundamentally in how they update parameters. AdamW uses adaptive per-parameter learning rates derived from first and second moments of gradients, often leading to faster early convergence and smoother optimization. SGD with momentum, while less adaptive, is known to introduce implicit regularization effects that can improve generalization, particularly on vision tasks. Prior empirical work suggests that these differences manifest not only in final performance but also in how loss and accuracy evolve across epochs, especially under limited training budgets.
+---
 
-## Hypotheses
-- H1 (Convergence Speed): AdamW will achieve higher test accuracy in early epochs due to adaptive learning rates.
-- H2 (Stability): AdamW will exhibit smoother and less noisy loss curves compared to SGD.
-- H3 (Generalization Trend): SGD with momentum may close the accuracy gap or surpass AdamW in later epochs due to implicit regularization effects.
-- H4 (Failure Mode): If SGD fails to converge adequately within 20 epochs, it may indicate sensitivity to learning rate choice rather than optimizer inferiority.
+## Hypothesis
+We hypothesize that **AdamW will converge faster than SGD** due to its adaptive learning rates and decoupled weight decay, especially under a limited number of training epochs. We further expect SGD to show slower but more stable improvement, potentially requiring longer training to close the performance gap.
 
-## Setup
-- Model: ResNet-18
-- Dataset: CIFAR-10 (subset)
-- Batch size: 32
-- Epochs: 1
-- Learning rate: 1e-3
+---
+
+## Experimental Setup
+- **Dataset:** CIFAR-10  
+- **Model:** ResNet-18  
+- **Epochs:** 20  
+- **Batch size:** 128  
+- **Learning rate:** 1e-3  
+- **Seed:** 42  
+- **Optimizers:**  
+  - AdamW  
+  - SGD with momentum (0.9)  
+- **Hardware:** NVIDIA T4 GPU (Google Colab)  
+
+All hyperparameters except the optimizer were held constant to ensure a fair comparison.
+
+---
 
 ## Results
 
-### AdamW
-- Training loss (epoch 1): 1.9976
-- Test accuracy: 30.90 %
+### Test Accuracy vs Epoch
+![Accuracy](../../results/figures/opt_adamw_vs_sgd_acc.png)
 
-### SGD (momentum = 0.9)
-- Training loss (epoch 1): 2.1302
-- Test accuracy: 30.80 %
+### Training Loss vs Epoch
+![Loss](../../results/figures/opt_adamw_vs_sgd_loss.png)
 
-## Immediate Observations
-- AdamW convergence speed:
-- SGD convergence speed:
-- Stability (loss smoothness):
+---
 
+## Interpretation
+AdamW demonstrates substantially faster early convergence, reaching higher test accuracy within the first few epochs and maintaining a consistent advantage throughout training. The training loss curve shows a smoother and more rapid decrease for AdamW, suggesting more effective optimization dynamics under the same learning rate.
+
+SGD, while slower to converge, exhibits steady improvement and a more gradual loss reduction. This behavior is consistent with classical observations that SGD often requires longer training schedules or learning-rate tuning to match adaptive optimizers in short-budget settings.
+
+Together, the accuracy and loss curves indicate that **optimizer choice has a significant impact on practical performance when training time is constrained**, even when model and data remain unchanged.
+
+---
+
+## Limitations
+- Only a single learning rate was evaluated for each optimizer  
+- Training was limited to 20 epochs  
+- No learning-rate schedules were used  
+- Results are based on a single random seed  
+
+These factors limit conclusions about long-run generalization and optimal hyperparameter regimes.
+
+---
+
+## Next Steps
+- Extend training to longer horizons to test whether SGD closes the gap  
+- Evaluate robustness under label noise or stronger data augmentation  
+- Compare optimizers under different learning-rate schedules  
+
+These directions motivate the **generalization stress tests** explored in subsequent experiments.
