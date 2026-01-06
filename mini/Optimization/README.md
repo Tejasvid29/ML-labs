@@ -61,3 +61,19 @@ These factors limit conclusions about long-run generalization and optimal hyperp
 - Compare optimizers under different learning-rate schedules  
 
 These directions motivate the **generalization stress tests** explored in subsequent experiments.
+
+---
+
+## Generalization Stress Test (Augmentation Strength)
+
+### Hypothesis
+Stronger data augmentation will slow early optimization and increase training loss, but improve or stabilize test accuracy by encouraging invariance and reducing overfitting. Under a fixed compute budget, this may trade off convergence speed for better generalization.
+
+### Experimental Setup
+
+### Results
+
+### Interpretation
+
+### Limitations
+

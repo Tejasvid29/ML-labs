@@ -7,12 +7,13 @@ from torch.utils.data import Subset
 #datasets provdies ready-made datasets like CIFAR-10
 #trasnforms defines how raw images are processed before the model sees them
 
-def get_dataloaders(batch_size = 128, num_workers = 2):
+def get_dataloaders(batch_size = 128, num_workers = 2, aug_strength="weak"):
 
 #batch_size - how many images per batch
 #num_workers - how many CPU processes load data in parallel
 
-    train_transform = transforms.Compose([
+    if aug_strength == "weak":
+        train_transform = transforms.Compose([
         transforms.RandomCrop(32, padding = 4), #data augmentation
         transforms.RandomHorizontalFlip(), #randomly flips images 
         transforms.ToTensor(),
@@ -21,6 +22,19 @@ def get_dataloaders(batch_size = 128, num_workers = 2):
             std = (0.2023, 0.1994, 0.2010)
         )
     ])
+    elif aug_strength == "strong":
+         train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding = 4), #data augmentation
+        transforms.RandomHorizontalFlip(), #randomly flips images 
+        transforms.RandAugment(num_ops=2, magnitude=9),
+        transforms.ToTensor(),
+        transforms.Normalize( #normalizes data, Xnormalized = (x - mean)/std
+            mean = (0.4914, 0.4822, 0.4465),
+            std = (0.2023, 0.1994, 0.2010)
+        )
+    ])
+    else:
+        raise ValueError(f"Unknown aug_strength: {aug_strength}")
 
     test_transform = transforms.Compose([
         transforms.ToTensor(),

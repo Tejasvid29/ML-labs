@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--run_name", type=str, default = "baseline")
     parser.add_argument("--runs_root", type=str, default="runs")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--aug_strength", type=str, default="weak", choices=["weak", "strong"])
     return parser.parse_args()
 
 # def prepare_run_dir(run_name): #creates a new file to keep records isolated and clean
@@ -47,7 +48,9 @@ def main():
 
     #Load Data
     train_loader, test_loader = get_dataloaders(
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        aug_strength=args.aug_strength
     )
 
     #Initialize model
