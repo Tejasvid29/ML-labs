@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--run_name", type=str, default = "baseline")
     parser.add_argument("--runs_root", type=str, default="runs")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--num_workers", type=int, default=2)
     parser.add_argument("--aug_strength", type=str, default="weak", choices=["weak", "strong"])
     return parser.parse_args()
 
