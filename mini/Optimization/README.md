@@ -70,10 +70,24 @@ These directions motivate the **generalization stress tests** explored in subseq
 Stronger data augmentation will slow early optimization and increase training loss, but improve or stabilize test accuracy by encouraging invariance and reducing overfitting. Under a fixed compute budget, this may trade off convergence speed for better generalization.
 
 ### Experimental Setup
+We compared **weak** vs **strong** training-time data augmentation while keeping all other factors constant: dataset (CIFAR-10), model (ResNet-18), optimizer (AdamW), learning rate, batch size, random seed, and number of epochs (20).  
+The only change between runs was the augmentation pipeline applied to the training data. Evaluation was performed using identical test transforms.
+
 
 ### Results
+Run 1: Weak Augmentation
+- Final test accuracy: 52.30%
+- Training loss: 1.00
+- Behavior: fats convergence, early plateau
+
+Run 2: Strong Augmentation
+- Final test accuracy: 54.10
+- Training loss: 1.5375
+- Behavior: slower optimization, better generalization
 
 ### Interpretation
+Strong augmentation increases training difficulty (higher loss) but improves generalization, achieveing higher test accuracy under the same compute budget. This supports the hypothesis that inducing stronger invariances trades off optimization speed for robustness.
 
-### Limitations
+### Limitation
+This experiment was conducted on a reduced CIFAR-10 subset and a single augmentation configuration. Results may vary with larger datasets, longer training schedules, or alternative augmentation policies.
 
